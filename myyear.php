@@ -22,7 +22,7 @@ $x = 32;
 $y = 32;
 imagettftext($image, $fontSize, 0, $x, $y+$fontSize, $textColor, $font, $year);
 
-$conn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
+$conn = mysqli_connect(DBHOST, DBUSER, DBPASS, DBNAME);
 if (!$conn) {
     // If the connection was not successful, print an error message and exit
     echo 'Error: Could not connect to DB server';
