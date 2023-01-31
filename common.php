@@ -7,6 +7,7 @@ function db_connect() {
         echo 'Error: Could not connect to DB server';
         exit;
     }
+    mysqli_query($conn, "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
     return $conn;
 }
 
@@ -286,6 +287,33 @@ function summmarize_year($userId, $year) {
         mysqli_query($conn, $query);
     }
 
+}
+
+function imageUTF8text($image, $fontSize, $x, $y, $textColor, $font, $string) {
+	for ($i=0; $i<mb_strlen($string); $i++){
+		$char = mb_substr($string, $i, 1, 'UTF-8');
+		$ord = mb_ord($char);
+		if ($ord > 126976) {
+			$emojiCode = dechex($ord);
+			$emojiFileLocal = 'twemoji/' . $emojiCode . '.png';
+			$emojiFile = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/' . $emojiCode . '.png';
+			if (substr(@get_headers($emojiFile)[0], 9, 3) === '200') {
+				$emojiImage = imagecreatefrompng($emojiFile);
+				imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
+				$x += $fontSize;
+			} elseif (file_exists($emojiFileLocal)) {
+				$emojiImage = imagecreatefrompng($emojiFileLocal);
+				imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
+				$x += $fontSize;
+			} else {
+				imagettftext($image, $fontSize, 0, $x, $y, $textColor, $font, $char);
+				$x += $fontSize * 4;
+			}
+		} else {
+			$rect = imagettftext($image, $fontSize, 0, $x, $y, $textColor, $font, $char);
+			$x += $rect[2] - $rect[0];
+		}
+	}
 }
 
 function html_top() {

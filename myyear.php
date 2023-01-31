@@ -31,6 +31,7 @@ if (mysqli_num_rows($result) > 0) {
     $user = mysqli_fetch_assoc($result);
     $prenom = $user['prenom'];
     $nom = $user['nom'];
+    // $nom = mb_convert_encoding($user['nom'], 'UTF-8');
 
     $photo = $user['photo'];
     $type = exif_imagetype($photo);
@@ -53,7 +54,8 @@ if (mysqli_num_rows($result) > 0) {
     $fontSize = 55;
     $x = 96;
     $y = 112;
-    imagettftext($image, $fontSize, 0, $x, $y+$fontSize, $textColor, $font, $prenom.' '.$nom);
+    imageUTF8text($image, $fontSize, $x, $y+$fontSize, $textColor, $font, $prenom.' '.$nom);
+    // imagettftext($image, $fontSize, 0, $x, $y+$fontSize, $textColor, $font, $prenom.' '.$nom);
 }
 
 $query = "SELECT * FROM yearSummary user WHERE id = $id AND annee = $year";
