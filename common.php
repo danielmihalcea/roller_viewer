@@ -295,14 +295,19 @@ function imageUTF8text($image, $fontSize, $x, $y, $textColor, $font, $string) {
 		$ord = mb_ord($char);
 		if ($ord > 126976) {
 			$emojiCode = dechex($ord);
-			$emojiFileLocal = 'twemoji/' . $emojiCode . '.png';
-			$emojiFile = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/' . $emojiCode . '.png';
-			if (substr(@get_headers($emojiFile)[0], 9, 3) === '200') {
-				$emojiImage = imagecreatefrompng($emojiFile);
+			$emojiFile = 'noto/'.$emojiCode.'.png';
+			$emojiNoto = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/72/emoji_u'.$emojiCode.'.png';
+			$emojiTwemoji = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/'.$emojiCode.'.png';
+            if (file_exists($emojiFile)) {
+                $emojiImage = imagecreatefrompng($emojiFile);
+                imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
+                $x += $fontSize;
+            } elseif (substr(@get_headers($emojiNoto)[0], 9, 3) === '200') {
+				$emojiImage = imagecreatefrompng($emojiNoto);
 				imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
 				$x += $fontSize;
-			} elseif (file_exists($emojiFileLocal)) {
-				$emojiImage = imagecreatefrompng($emojiFileLocal);
+            } elseif (substr(@get_headers($emojiTwemoji)[0], 9, 3) === '200') {
+				$emojiImage = imagecreatefrompng($emojiTwemoji);
 				imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
 				$x += $fontSize;
 			} else {
