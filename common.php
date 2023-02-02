@@ -11,6 +11,12 @@ function db_connect() {
     return $conn;
 }
 
+function file_get_contents_utf8($fn) {
+    $content = file_get_contents($fn);
+    return mb_convert_encoding($content, 'UTF-8',
+        mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
+}
+
 function strava_oauth() {
     $scope = 'activity:read_all'; // Set the scope to request read_all access
     $clientId = CLIENTID;
@@ -39,7 +45,7 @@ function strava_init_user($code) {
     $expiresAt = $tokenData['expires_at'];
     $refreshToken = $tokenData['refresh_token'];
     // Retrieve the user's information
-    $response = file_get_contents("$baseUrl/athlete?access_token=$accessToken");
+    $response = file_get_contents_utf8("$baseUrl/athlete?access_token=$accessToken");
     $athlete = json_decode($response, true);
     $userId = $athlete['id'];
     $userPrenom = $athlete['firstname'];
@@ -177,7 +183,7 @@ function summmarize_year($userId, $year) {
     global $conn, $baseUrl;
     $accessToken = strava_get_access_token($userId);
     $startDate = strtotime("$year-01-01");// Set the start and end dates for the year
-    $endDate = strtotime(($year+1).'-01-01');// $endDate = strtotime("$year-12-31");
+    $endDate = strtotime(($year+1).'-01-01')-1;// end timecode is 1st jan at 0:00:00 = 1 second after the end oft the year
 
     $activities = array();
     $page = 1;
@@ -290,6 +296,7 @@ function summmarize_year($userId, $year) {
 }
 
 function imageUTF8text($image, $fontSize, $x, $y, $textColor, $font, $string) {
+    $string = mb_convert_encoding($string, 'UTF-8');
 	for ($i=0; $i<mb_strlen($string); $i++){
 		$char = mb_substr($string, $i, 1, 'UTF-8');
 		$ord = mb_ord($char);

@@ -60,7 +60,7 @@ if (mysqli_num_rows($result) > 0) {
 
 $query = "SELECT * FROM yearSummary user WHERE id = $id AND annee = $year";
 $result = mysqli_query($conn, $query);
-if (mysqli_num_rows($result) === 0) {
+if (mysqli_num_rows($result) === 0 || isset($_GET['refresh'])) {
     summmarize_year($id, $year);
 }
 $query = "SELECT * FROM yearSummary user WHERE id = $id AND annee = $year";
