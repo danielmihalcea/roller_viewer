@@ -23,7 +23,10 @@ $x = 32;
 $y = 32;
 imagettftext($image, $fontSize, 0, $x, $y+$fontSize, $textColor, $font, $year);
 
-$accessToken = strava_get_access_token($id);
+// $accessToken = strava_get_access_token($id);
+if (isset($_GET['refresh'])) {
+    strava_set_user($id);
+}
 
 $query = "SELECT * FROM user WHERE id = $id";
 $result = mysqli_query($conn, $query);
@@ -36,19 +39,19 @@ if (mysqli_num_rows($result) > 0) {
     $photo = $user['photo'];
     $type = exif_imagetype($photo);
     switch($type) {
-      case IMAGETYPE_JPEG:
-        $img = imagecreatefromjpeg($photo);
-        break;
-      case IMAGETYPE_PNG:
-        $img = imagecreatefrompng($photo);
-        break;
-      case IMAGETYPE_WEBP:
-        $img = imagecreatefromwebp($photo);
-        break;
-      case IMAGETYPE_GIF:
-        $img = imagecreatefromgif($photo);
-        break;
-      default:
+        case IMAGETYPE_JPEG:
+            $img = imagecreatefromjpeg($photo);
+            break;
+        case IMAGETYPE_PNG:
+            $img = imagecreatefrompng($photo);
+            break;
+        case IMAGETYPE_WEBP:
+            $img = imagecreatefromwebp($photo);
+            break;
+        case IMAGETYPE_GIF:
+            $img = imagecreatefromgif($photo);
+            break;
+        default:
     }
     imagecopyresampled($image, $img, 32, 112, 0, 0, 64, 64, ImageSX($img), ImageSY($img));
     $fontSize = 55;

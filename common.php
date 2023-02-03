@@ -27,7 +27,7 @@ function strava_oauth() {
 }
 
 function strava_init_user($code) {
-    global $conn, $baseUrl;
+    global $conn;
     $clientId = CLIENTID;
     $clientSecret = CLIENTSECRET;
     $postData = "client_id=$clientId&client_secret=$clientSecret&code=$code&grant_type=authorization_code"; // Set up the POST data for the request to the OAuth token URL
@@ -44,6 +44,27 @@ function strava_init_user($code) {
     $accessToken = $tokenData['access_token'];
     $expiresAt = $tokenData['expires_at'];
     $refreshToken = $tokenData['refresh_token'];
+
+    $userId = strava_set_user($userId, $accessToken);
+    setcookie('user_id', $userId, time()+2628000); // cookie expires in 1 month
+
+    $query = "SELECT * FROM user WHERE id = $userId"; // l'utilisateur est-il déjà connu ? Si oui le maj sinon le créer
+    $result = mysqli_query($conn, $query);
+    if (mysqli_num_rows($result) > 0) {
+        $query = "UPDATE user SET refresh_token = '$refreshToken', access_token = '$accessToken', expires_at = '$expiresAt' WHERE id = $userId";
+        mysqli_query($conn, $query);
+    } else {
+        $query = "INSERT INTO user (refresh_token, access_token, expires_at) VALUES ('$refreshToken', '$accessToken', '$expiresAt')";
+        mysqli_query($conn, $query);
+    }
+
+}
+
+function strava_set_user($userId, $accessToken = NULL) {
+    global $conn, $baseUrl;
+    if ($accessToken === NULL) {
+        $accessToken = strava_get_access_token($userId);
+    }
     // Retrieve the user's information
     $response = file_get_contents_utf8("$baseUrl/athlete?access_token=$accessToken");
     $athlete = json_decode($response, true);
@@ -54,22 +75,22 @@ function strava_init_user($code) {
     $userPhoto =  $athlete['profile_medium'];
     $userVille =  $athlete['city'];
     $userPays =  $athlete['country'];
-    setcookie('user_id', $userId, time()+2628000); // cookie expires in 1 month
-    // l'utilisateur est-il déjà connu ? Si oui le maj sinon le créer
-    $query = "SELECT * FROM user WHERE id = $userId";
+    
+    $query = "SELECT * FROM user WHERE id = $userId"; // l'utilisateur est-il déjà connu ? Si oui le maj sinon le créer
     $result = mysqli_query($conn, $query);
     if (mysqli_num_rows($result) > 0) {
-        $query = "UPDATE user SET prenom = '$userPrenom', nom = '$userNom', email = '$userEmail', photo = '$userPhoto', ville = '$userVille', pays = '$userPays', refresh_token = '$refreshToken', access_token = '$accessToken', expires_at = '$expiresAt' WHERE id = $userId";
+        $query = "UPDATE user SET prenom = '$userPrenom', nom = '$userNom', email = '$userEmail', photo = '$userPhoto', ville = '$userVille', pays = '$userPays' WHERE id = $userId";
         mysqli_query($conn, $query);
     } else {
-        $query = "INSERT INTO user (id, prenom, nom, email, photo, ville, pays, refresh_token, access_token, expires_at) VALUES ('$userId', '$userPrenom', '$userNom', '$userEmail', '$userPhoto', '$userVille', '$userPays', '$refreshToken', '$accessToken', '$expiresAt')";
+        $query = "INSERT INTO user (id, prenom, nom, email, photo, ville, pays) VALUES ('$userId', '$userPrenom', '$userNom', '$userEmail', '$userPhoto', '$userVille', '$userPays')";
         mysqli_query($conn, $query);
     }
+    return $userId;
 }
 
-function get_user($id) {
+function get_user($userId) {
     global $conn;
-    $query = "SELECT * FROM user WHERE id = $id";
+    $query = "SELECT * FROM user WHERE id = $userId";
     $result = mysqli_query($conn, $query);
     if (mysqli_num_rows($result) > 0) {
         return mysqli_fetch_assoc($result);
@@ -100,8 +121,8 @@ function strava_refresh_tokken($refreshToken) {
     return $accessToken;
 }
 
-function strava_get_access_token($id) {
-    $user = get_user($id);
+function strava_get_access_token($userId) {
+    $user = get_user($userId);
     if (count($user) > 0) {
         $accessToken = $user['access_token'] ?? '';
         $expiresAt = $user['expires_at'] ?? 0;

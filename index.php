@@ -33,10 +33,13 @@ mysqli_close($conn);
             echo '<option value="myyear.php?id='.$userId.'&year='.$i.'"'.$selected.'>'.$i.'</option>'.PHP_EOL;
         }
         ?>
-    </select><input type="button" value="voir" onclick="document.getElementById('year_image').src=document.getElementById('year').value;document.getElementById('download').href=document.getElementById('year').value+'&download';">
+    </select>
+    <input type="button" value="voir" onclick="document.getElementById('year_image').src=document.getElementById('year').value;document.getElementById('download').href=document.getElementById('year').value+'&download';">
+    &nbsp;
+    <input type="button" value="actuliser ↻" onclick="document.getElementById('year_image').src=document.getElementById('year').value+'&refresh';document.getElementById('download').href=document.getElementById('year').value+'&download';">
     <br>
-    <br><a href="<?=$imgurl?>&download" id="download">download</a>
-    <hr><a href="https://github.com/danielmihalcea/roller_viewer" target="_blank">source (GitHub)⧉</a>
+    <br><a href="<?=$imgurl?>&download" id="download">download</a><br><br>
+    <hr><a href="https://github.com/danielmihalcea/roller_viewer" target="_blank">code source (GitHub)⧉</a>
 </div>
 
 <?php
