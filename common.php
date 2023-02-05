@@ -328,20 +328,17 @@ function imageUTF8text($image, $fontSize, $x, $y, $textColor, $font, $string) {
 			$emojiTwemoji = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/'.$emojiCode.'.png';
             if (file_exists($emojiFile)) {
                 $emojiImage = imagecreatefrompng($emojiFile);
-                imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
-                $x += $fontSize;
             } elseif (substr(@get_headers($emojiNoto)[0], 9, 3) === '200') {
 				$emojiImage = imagecreatefrompng($emojiNoto);
-				imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
-				$x += $fontSize;
             } elseif (substr(@get_headers($emojiTwemoji)[0], 9, 3) === '200') {
-				$emojiImage = imagecreatefrompng($emojiTwemoji);
-				imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
-				$x += $fontSize;
+                $emojiImage = imagecreatefrompng($emojiTwemoji);
 			} else {
-				imagettftext($image, $fontSize, 0, $x, $y, $textColor, $font, $char);
-				$x += $fontSize * 4;
+                $emojiImage = imagecreatetruecolor($fontSize,$fontSize);
+                $trans_colour = imagecolorallocatealpha($emojiImage, 0, 0, 0, 127);
+                imagefill($emojiImage, 0, 0, $trans_colour);
 			}
+            imagecopyresampled ($image, $emojiImage, $x, $y-$fontSize, 0, 0, $fontSize, $fontSize, imagesx($emojiImage), imagesy($emojiImage));
+            $x += $fontSize;
 		} else {
 			$rect = imagettftext($image, $fontSize, 0, $x, $y, $textColor, $font, $char);
 			$x += $rect[2] - $rect[0];
